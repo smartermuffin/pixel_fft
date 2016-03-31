@@ -106,6 +106,7 @@ def split_bands_safe(data):
    try:
       power = calculate_levels(data,chunk,sample_rate)
    except:
+      print "hurf durf"
       return last_split_band
    split_bands = band_split(power)
    last_split_band = split_bands
