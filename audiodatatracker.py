@@ -43,6 +43,8 @@ class AudioDataTracker:
       
       self.incomingQueue = Queue.Queue()
       
+      self.subscribers = []
+      
       for x in range(0, numBands):
          self.buffer.append(RingBuffer(bufferLen))
 
@@ -50,6 +52,7 @@ class AudioDataTracker:
       self.delay = delay
       
       self.dataLock = Lock()
+      self.subscribeLock = Lock()
    
    def start(self):
       self.running = True
@@ -59,7 +62,7 @@ class AudioDataTracker:
       self.running = False
    
    def newAudioData(self,audioData):
-      if self.incomingQueue.qsize() > self.bufferLen:
+      if self.incomingQueue.qsize() > self.bufferLen + 100:
          self.incomingQueue.get()
       
       self.incomingQueue.put(audioData)
@@ -84,8 +87,9 @@ class AudioDataTracker:
             for d in data:
                stats.append(slow_stats(d,0))
             
-            for line in stats:
-               print line
+            output = AudioTrackerScaler(stats)
+            
+            self.disbatchUpdate(output)
    
    
    def insertAudioData(self, audioData):
@@ -95,6 +99,18 @@ class AudioDataTracker:
          self.buffer[x].append(audioData[x])
       
    
+   def updateSubscribe(self, target):
+      self.subscribeLock.acquire()
+      self.subscribers.append(target)
+      self.subscribeLock.release()
+      
+      
+   def disbatchUpdate(self, data):
+      self.subscribeLock.acquire()
+      for s in self.subscribers:
+         s(data)
+      
+      self.subscribeLock.release()
    
    
    def _getData(self):
@@ -109,3 +125,35 @@ class AudioDataTracker:
       self.dataLock.release()
       return x
 
+
+      
+      
+class AudioTrackerScaler:
+   def __init__(self, stats):
+      self.stats = stats
+      
+   def ScaleBandToRange(self, band, value, rangeMin, rangeMax):
+      s = self.stats[band]
+      min = s[0]
+      max = s[1]
+      range = max - min
+      adjValue = value - min
+      
+      if value < min:
+         adjValue = 0
+         self.stats[band][0]= value
+      
+      if value > max:
+         adjValue = range
+         self.stats[band][1]= value
+      
+      outputRange = rangeMax - rangeMin
+      
+      scaledValue = adjValue/range * outputRange + rangeMin
+      
+      return scaledValue
+      
+   def printStats(self):
+      for x in self.stats:
+         print x
+      
