@@ -21,7 +21,9 @@ class ledUpdater(Thread):
       self.incomingAudioData = Queue.Queue()
       self.last_normLevel = 0
       self.audioUpdates = 0
-      self.dataTracker = AudioDataTracker(300,num_default_bands())
+      
+      self.dataTracker = AudioDataTracker(500,num_default_bands(),30)
+      self.dataTracker.start()
       
       self.runCount = 0
       self.updateCount = 0
@@ -30,6 +32,7 @@ class ledUpdater(Thread):
       
    def stop(self):
       self.running = False
+      self.dataTracker.stop()
       
    def newAudioData(self, audioData):
       if self.incomingAudioData.qsize() > 10:
@@ -44,10 +47,8 @@ class ledUpdater(Thread):
    def run(self):
       while self.running:
          self.runCount += 1
-         if self.runCount % 10000 == 0:
-            print self.runCount,self.updateCount, self.incomingAudioData.qsize()
-         if self.runCount %100000 == 0:
-            print self.dataTracker.getData()
+         #if self.runCount % 10000 == 0:
+         #  print self.runCount,self.updateCount, self.incomingAudioData.qsize()
          if self.incomingAudioData.empty():
             continue
          
@@ -76,7 +77,7 @@ class ledUpdater(Thread):
             normLevel = int(splitBands[band]/cutoff * 220 + 30)
             
          if normLevel < self.last_normLevel:
-            col = colors.hsv2rgb((self.last_normLevel - 10,200,200))
+            col = colors.hsv2rgb((self.last_normLevel - 10,200,150))
             self.last_normLevel = self.last_normLevel - 10
             self.led.fill(col)
             self.led.update()
@@ -85,7 +86,7 @@ class ledUpdater(Thread):
          
          
          if abs(normLevel - self.last_normLevel) > 50:
-            col = colors.hsv2rgb((normLevel,200,200))
+            col = colors.hsv2rgb((normLevel,200,150))
             self.last_normLevel = normLevel
             self.led.fill(col)
             self.led.update()

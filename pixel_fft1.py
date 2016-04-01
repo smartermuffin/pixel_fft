@@ -8,7 +8,8 @@ import bibliopixel.colors as colors
 audio_in  = init_audio_in()
 audio_out = init_audio_out()
 
-numLED = 160 *2
+#numLED = 160 *2
+numLED = 10
 led = init_led(numLED)
 
 ledUpdate = ledUpdater(led)
