@@ -62,6 +62,8 @@ class AudioDataTracker:
       self.running = False
    
    def newAudioData(self,audioData):
+      if not self.running:
+         return
       if self.incomingQueue.qsize() > self.bufferLen + 100:
          self.incomingQueue.get()
       
@@ -73,6 +75,8 @@ class AudioDataTracker:
    def trackAudioThread(self, delay):
          while self.running:
             sleep(delay)
+            if self.incomingQueue.qsize() == 0:
+               return
             self.dataLock.acquire()
             queueSize = self.incomingQueue.qsize()
             print queueSize
@@ -132,7 +136,7 @@ class AudioTrackerScaler:
    def __init__(self, stats):
       self.stats = stats
       
-   def ScaleBandToRange(self, band, value, rangeMin, rangeMax):
+   def scaleBandToRange(self, band, value, rangeMin, rangeMax):
       s = self.stats[band]
       min = s[0]
       max = s[1]

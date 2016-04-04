@@ -22,7 +22,7 @@ class ledUpdater(Thread):
       self.last_normLevel = 0
       self.audioUpdates = 0
       
-      self.dataTracker = AudioDataTracker(500,num_default_bands(),30)
+      self.dataTracker = AudioDataTracker(500,num_default_bands(),15)
       
       self.dataTracker.updateSubscribe(self.newAudioTrackerData)
       self.dataTracker.start()

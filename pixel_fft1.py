@@ -29,7 +29,7 @@ try:
             continue
          
          ledUpdate.newAudioData(splitBands)
-         
+         sleep(.001)
                
          
 except KeyboardInterrupt:
