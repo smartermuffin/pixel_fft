@@ -8,20 +8,20 @@ import bibliopixel.colors as colors
 audio_in  = init_audio_in()
 audio_out = init_audio_out()
 
-numLED = 160 *2
-#numLED = 10
+#numLED = 160 *2
+numLED = 10
 led = init_led(numLED)
 
 ledUpdate = ledUpdater(led)
 ledUpdate.start()
-
+print num_default_bands(), "bands"
 
 try:
    while True:
       l,data = audio_in.read()
       if l:
          splitBands =  split_bands_safe(data)
-         output_audio = True
+         output_audio = False
          if len(data) == 1024 and output_audio:      #otherwise we'll crash
             audio_out.write(data)
          

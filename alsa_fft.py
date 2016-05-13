@@ -3,6 +3,7 @@ sample_rate = 44100
 no_channels =1 
 chunk = 512 # Use a multiple of 8
 default_bands = [20,200,400,750,800,900,1000,1250,2500,3200,5000,8000,10000,15000,20000]
+#default_bands = [20,750,2500,5000,8000,15000,20000]
 band_max = [0] * len(default_bands)
 band_min = [100] * len(default_bands)
 last_split_band = [0] * len(default_bands)
@@ -110,6 +111,7 @@ def split_bands_safe(data):
       return last_split_band
    split_bands = band_split(power)
    last_split_band = split_bands
+
    return split_bands
    
 

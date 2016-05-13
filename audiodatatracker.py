@@ -67,7 +67,7 @@ class AudioDataTracker:
       if self.incomingQueue.qsize() > self.bufferLen + 100:
          self.incomingQueue.get()
       
-      self.incomingQueue.put(audioData)
+      self.incomingQueue.put_nowait(audioData)
       
       
    
@@ -136,28 +136,71 @@ class AudioTrackerScaler:
    def __init__(self, stats):
       self.stats = stats
       
+      
+      self.audioMin = []
+      self.audioMax = []
+      self.audioSTD = []
+      self.audioAvg = []
+      for x in self.stats:
+         self.audioMin.append(self.stats[0])
+         
+
+      
    def scaleBandToRange(self, band, value, rangeMin, rangeMax):
       s = self.stats[band]
+
       min = s[0]
       max = s[1]
       range = max - min
-      adjValue = value - min
+      adjValue = float(value) - min
       
       if value < min:
          adjValue = 0
-         self.stats[band][0]= value
+         #self.stats[band][0]= value
       
       if value > max:
-         adjValue = range
-         self.stats[band][1]= value
-      
+         adjValue = float(range)
+         #self.stats[band][1]= value
+
+
       outputRange = rangeMax - rangeMin
       
-      scaledValue = adjValue/range * outputRange + rangeMin
+      scaledValue = int(adjValue/range * outputRange + rangeMin)
       
       return scaledValue
       
    def printStats(self):
-      for x in self.stats:
-         print x
-      
+      for x in range(0,len(self.stats)):
+         print self.stats[x], self.bandMetric(x)
+         
+   def mostActiveBand(self):
+      stats = self.stats
+      minband = 1
+      i = minband
+      #if type(stats).__name__ == 'list':
+      #   return 5
+      y = len(stats)
+      for x in range(minband,y):
+            if self.bandMetric(x) > self.bandMetric(i):
+                i =x
+
+      return i
+
+   def bandMetric(self,band):
+      range =  abs(self.stats[band][0] - self.stats[band][1])
+      return range * self.stats[band][3]
+
+
+class DummyAudioTrackerScaler(AudioTrackerScaler):
+    def __init__(self):
+        AudioTrackerScaler([])
+
+    def mostActiveBand(self):
+        return 0
+
+    def printStats(self):
+        print "lol"
+
+    def scaleBandToRange(self, band, value, rangeMin, rangeMax):
+        outputrange = rangeMax - rangeMin
+        return int((float(value) - 9) / 30 * outputrange + rangeMin)
